@@ -10,7 +10,7 @@ import UIKit
 import QuartzCore
 import Foundation
 
-class SpringySlider: UIControl
+@IBDesignable class SpringySlider: UIControl
 {
     private let trackLayerHeight: CGFloat = 4.0
     private let maxTiltAngle: CGFloat = CGFloat(M_PI/5)
@@ -28,23 +28,32 @@ class SpringySlider: UIControl
         return self.bounds.size.width
     }
     
-    internal var thumbTintColor: UIColor = UIColor.whiteColor() {
+    internal var value: CGFloat = 0.5 {
+        didSet {
+            self.thumbLayer.position.x = self.value * self.bounds.width
+            self.minTrackLayer.frame.size.width = self.value * self.bounds.width
+        }
+    }
+    
+    @IBInspectable internal var thumbTintColor: UIColor = UIColor.whiteColor() {
         didSet {
             self.thumbLayer.fillColor = self.thumbTintColor.CGColor
         }
     }
     
-    internal var trackTintColor: UIColor = UIColor.whiteColor()  {
+    @IBInspectable internal var trackTintColor: UIColor = UIColor.whiteColor()  {
         didSet {
             self.minTrackLayer.backgroundColor = self.trackTintColor.CGColor
             self.maxTrackLayer.backgroundColor = self.trackTintColor.colorWithAlphaComponent(0.5).CGColor
         }
     }
     
-    internal var value: CGFloat = 0.5 {
+    @IBInspectable internal var thumbImage: UIImage? {
         didSet {
-            self.thumbLayer.position.x = self.value * self.bounds.width
-            self.minTrackLayer.frame.size.width = self.value * self.bounds.width
+            self.thumbLayer.contents = thumbImage!.CGImage
+            self.thumbLayer.frame.size = thumbImage!.size
+            self.thumbLayer.position = CGPointMake(self.value * self.trackLayerWidth, self.trackLayerHeight)
+            self.thumbLayer.path = nil
         }
     }
     
@@ -64,8 +73,6 @@ class SpringySlider: UIControl
     
     private func setup() -> ()
     {
-        self.tintColor = UIColor.whiteColor()
-        
         self.maxTrackLayer = CALayer()
         self.maxTrackLayer.frame = CGRectMake(0, 0, self.trackLayerWidth, self.trackLayerHeight)
         self.maxTrackLayer.backgroundColor = self.trackTintColor.colorWithAlphaComponent(0.5).CGColor
@@ -85,13 +92,12 @@ class SpringySlider: UIControl
         self.layer.addSublayer(self.thumbLayer)
     }
     
-    // MARK: internal functions
-    
-    internal func setThumbImage(image: UIImage) -> ()
-    {
-        self.thumbLayer.contents = image.CGImage
-        self.thumbLayer.frame.size = image.size
-        self.thumbLayer.path = nil
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        
+        self.maxTrackLayer.frame = CGRectMake(0, 0, self.trackLayerWidth, self.trackLayerHeight)
+        self.minTrackLayer.frame = CGRectMake(0, 0, self.value * self.trackLayerWidth, self.trackLayerHeight)
+        self.thumbLayer.position = CGPointMake(self.value * self.trackLayerWidth, self.trackLayerHeight)
     }
     
     // MARK: tracking behaviour
